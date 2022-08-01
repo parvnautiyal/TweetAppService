@@ -35,7 +35,7 @@ services:
     container_name: elasticsearch
     restart: always
     volumes:
-      - elastic_data:/usr/share/elasticsearch/data/
+      - elastic_data:/usr/share/elasticsearch/data/:rw
     environment:
       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
       discovery.type: single-node
@@ -93,7 +93,7 @@ services:
     networks:
       - kafka_network
     volumes:
-      - ./config/logs/tweetApp.log:/logs/tweetApp.log
+      - ./config:/logs
     environment:
       SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:29092
       MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: true
@@ -101,6 +101,9 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
 
   prometheus:
     image: prom/prometheus:v2.21.0
