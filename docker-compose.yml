@@ -93,7 +93,7 @@ services:
     networks:
       - kafka_network
     volumes:
-      - ./config/logs:/logs
+      - ./config/logs/tweetApp.log:/logs/tweetApp.log
     environment:
       SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:29092
       MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: true
