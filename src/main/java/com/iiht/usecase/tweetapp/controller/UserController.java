@@ -22,6 +22,7 @@ import java.util.List;
 
 import static com.iiht.usecase.tweetapp.util.Constants.*;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping(BASE_URI)
 @Slf4j
@@ -46,17 +47,17 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public ResponseEntity<String> login(@RequestParam("email") String email, @RequestParam("password") String password) {
+    public ResponseEntity<String> login(@RequestParam("username") String username, @RequestParam("password") String password) {
         log.info(IN_REQUEST_LOG, "login", "Attempting to login");
-        String loginResult = userService.login(email, password);
+        String loginResult = userService.login(username, password);
         log.info(SUCCESS);
         return new ResponseEntity<>(loginResult, HttpStatus.OK);
     }
 
     @GetMapping("/forgot")
-    public ResponseEntity<String> forgotPassword(@RequestParam("newPassword") String password, @RequestParam("username") String username) {
+    public ResponseEntity<String> forgotPassword(@RequestParam("newPassword") String password, @RequestParam("email") String email) {
         log.info(IN_REQUEST_LOG, "forgotPassword", "User requesting a password change");
-        String forgotPasswordResult = userService.forgotPassword(username, password);
+        String forgotPasswordResult = userService.forgotPassword(email, password);
         log.info(SUCCESS);
         return new ResponseEntity<>(forgotPasswordResult, HttpStatus.OK);
     }

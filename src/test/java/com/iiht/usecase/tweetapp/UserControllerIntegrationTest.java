@@ -144,7 +144,7 @@ class UserControllerIntegrationTest {
 
         //when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/login")
-                .param("email", user1.getEmail())
+                .param("username", user1.getUserName())
                 .param("password", user1.getPassword()));
 
         //then
@@ -158,7 +158,7 @@ class UserControllerIntegrationTest {
 
         //when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/login")
-                .param("email", user1.getEmail())
+                .param("username", user1.getUserName())
                 .param("password", user1.getPassword()));
 
         //then
@@ -175,7 +175,7 @@ class UserControllerIntegrationTest {
 
         //when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/forgot")
-                .param("username", user1.getUserName())
+                .param("email", user1.getEmail())
                 .param("newPassword", "newPassword"));
 
         //then
@@ -189,7 +189,7 @@ class UserControllerIntegrationTest {
 
         //when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/forgot")
-                .param("username", user1.getUserName())
+                .param("email", user1.getEmail())
                 .param("newPassword", "newPassword"));
 
         //then

@@ -70,12 +70,12 @@ class UserServiceTest {
     void loginAndForgotPasswordTest(){
 
         //given
-        given(userRepository.findByEmailAndPassword(user1.getEmail(),user1.getPassword())).willReturn(Optional.of(user1));
-        given(userRepository.findByUserName(user1.getUserName())).willReturn(Optional.of(user1));
+        given(userRepository.findByUserNameAndPassword(user1.getUserName(),user1.getPassword())).willReturn(Optional.of(user1));
+        given(userRepository.findByUserNameOrEmail(null,user1.getEmail())).willReturn(Optional.of(user1));
 
         //when
-        String actualLogin = userService.login(user1.getEmail(),user1.getPassword());
-        String actualForgotPassword = userService.forgotPassword(user1.getUserName(),"New Password");
+        String actualLogin = userService.login(user1.getUserName(),user1.getPassword());
+        String actualForgotPassword = userService.forgotPassword(user1.getEmail(),"New Password");
 
         //then
         assertThat(actualLogin).isEqualTo("Login successful for user "+user1.getUserName());
@@ -87,12 +87,12 @@ class UserServiceTest {
     void loginAndForgotPasswordExceptionTest(){
 
         //given
-        given(userRepository.findByEmailAndPassword(user1.getEmail(),user1.getPassword())).willReturn(Optional.empty());
-        given(userRepository.findByUserName(user1.getUserName())).willReturn(Optional.empty());
+        given(userRepository.findByUserNameAndPassword(user1.getUserName(),user1.getPassword())).willReturn(Optional.empty());
+        given(userRepository.findByUserNameOrEmail(null,user1.getEmail())).willReturn(Optional.empty());
 
         //when
-        assertThrows(TweetAppException.class,()->userService.login("email@test.com","password"));
-        assertThrows(TweetAppException.class,()->userService.forgotPassword("Test User","New Password"));
+        assertThrows(TweetAppException.class,()->userService.login("Test User","password"));
+        assertThrows(TweetAppException.class,()->userService.forgotPassword("email@test.com","New Password"));
 
         //then
     }

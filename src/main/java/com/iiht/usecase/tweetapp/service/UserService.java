@@ -10,9 +10,9 @@ public interface UserService {
 
     User registerUser(User user);
 
-    String login(String email, String password);
+    String login(String username, String password);
 
-    String forgotPassword(String username, String password);
+    String forgotPassword(String email, String password);
 
     List<User> getAllUsers();
 

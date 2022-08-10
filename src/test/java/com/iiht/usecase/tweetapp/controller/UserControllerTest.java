@@ -93,7 +93,7 @@ class UserControllerTest {
 
         //when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/login")
-                .param("email", "email@test.com")
+                .param("username", "user123")
                 .param("password", "password"));
 
         //then
@@ -110,7 +110,7 @@ class UserControllerTest {
 
         //when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/forgot")
-                .param("username", "user123")
+                .param("email", "email@test.com")
                 .param("newPassword", "newPassword"));
 
         //then

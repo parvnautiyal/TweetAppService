@@ -36,10 +36,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(String email, String password) {
+    public String login(String username, String password) {
         log.info(IN_REQUEST_LOG, "login", "Service method to login");
         log.info(VALIDATION);
-        Optional<User> foundUser = userRepository.findByEmailAndPassword(email, password);
+        Optional<User> foundUser = userRepository.findByUserNameAndPassword(username, password);
         if (foundUser.isPresent()) {
             log.info(SUCCESS);
             return "Login successful for user " + foundUser.get().getUserName();
@@ -47,10 +47,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String forgotPassword(String username, String password) {
+    public String forgotPassword(String email, String password) {
         log.info(IN_REQUEST_LOG, "forgotPassword", "Service method to reset password");
         log.info(VALIDATION);
-        Optional<User> user = userRepository.findByUserName(username);
+        Optional<User> user = userRepository.findByUserNameOrEmail(null,email);
         if (user.isPresent()) {
             user.get().setPassword(password);
             userRepository.save(user.get());
