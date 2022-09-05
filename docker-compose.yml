@@ -39,8 +39,8 @@ services:
     environment:
       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
       discovery.type: single-node
-      xpack.security.enabled: false
-      xpack.security.enrollment.enabled: false
+      xpack.security.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
     ports:
       - "9200:9200"
     networks:
@@ -96,7 +96,7 @@ services:
       - ./config:/logs
     environment:
       SPRING_KAFKA_BOOTSTRAPSERVERS: kafka:29092
-      MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: true
+      MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: "true"
       LOGGING_FILE_NAME: ./log/tweetApp.log
     build:
       context: ./
@@ -123,13 +123,25 @@ services:
     image: grafana/grafana:6.7.2
     container_name: grafana
     ports:
-      - 3000:3000
+      - "3000:3000"
     links:
       - prometheus
       - tweetapp
     networks:
       - kafka_network
-
+      
+  tweetAppAngular:
+   image: parvnautiyal/tweet-app-angular
+   container_name: tweet-app-angular
+   ports:
+    - "4200:4200"
+   networks:
+    - kafka_network
+   depends_on:
+    - tweetapp
+   links:
+     - tweetapp
+      
 volumes:
   elastic_data:
 

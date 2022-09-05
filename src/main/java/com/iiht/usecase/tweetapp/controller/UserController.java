@@ -22,7 +22,7 @@ import java.util.List;
 
 import static com.iiht.usecase.tweetapp.util.Constants.*;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin
 @RestController
 @RequestMapping(BASE_URI)
 @Slf4j

@@ -14,7 +14,7 @@
     <name>TweetApp</name>
     <description>TweetApp</description>
     <properties>
-        <java.version>18</java.version>
+        <java.version>17</java.version>
         <jacoco.version>0.8.8</jacoco.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
