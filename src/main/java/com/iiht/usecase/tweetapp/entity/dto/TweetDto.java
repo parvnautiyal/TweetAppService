@@ -2,6 +2,7 @@ package com.iiht.usecase.tweetapp.entity.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.iiht.usecase.tweetapp.entity.Reply;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,7 +16,7 @@ import java.util.Map;
 @Setter
 @Builder
 @ToString
-@JsonPropertyOrder({"tweetId", "username", "content", "created", "likes", "replies"})
+@JsonPropertyOrder({ "tweetId", "username", "content", "created", "likes", "replies" })
 public class TweetDto {
 
     @JsonProperty("tweetId")
@@ -24,7 +25,10 @@ public class TweetDto {
     @NotBlank(message = "tweet cannot be empty")
     @Size(max = 144, message = "tweet should not go beyond 144 characters")
     private String content;
+    @NotBlank(message = "tag cannot be empty")
+    @Size(max = 50, message = "tag should not go beyond 50 characters")
+    private String tag;
     private String created;
     private Map<String, String> likes;
-    private Map<String, List<String>> replies;
+    private List<Reply> replies;
 }

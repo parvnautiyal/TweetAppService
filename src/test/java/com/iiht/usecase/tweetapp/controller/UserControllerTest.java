@@ -6,7 +6,7 @@ import com.iiht.usecase.tweetapp.entity.Tweet;
 import com.iiht.usecase.tweetapp.entity.User;
 import com.iiht.usecase.tweetapp.entity.dto.TweetDto;
 import com.iiht.usecase.tweetapp.entity.dto.UserDto;
-import com.iiht.usecase.tweetapp.producer.TweetEventProducer;
+import com.iiht.usecase.tweetapp.producer.KafkaEventProducer;
 import com.iiht.usecase.tweetapp.service.UserService;
 import com.iiht.usecase.tweetapp.util.TweetsUtil;
 import com.iiht.usecase.tweetapp.util.UserUtil;
@@ -49,7 +49,7 @@ class UserControllerTest {
     private ModelMapper modelMapper;
 
     @MockBean
-    private TweetEventProducer tweetEventProducer;
+    private KafkaEventProducer kafkaEventProducer;
 
     @MockBean
     private UserService userService;
@@ -71,180 +71,146 @@ class UserControllerTest {
     @Test
     void registerTest() throws Exception {
 
-        //given
+        // given
         given(userService.registerUser(any(User.class))).willReturn(user1);
 
-        //when
-        ResultActions response = mockMvc.perform(post(BASE_URI + "/register")
-                .contentType(MediaType.APPLICATION_JSON)
+        // when
+        ResultActions response = mockMvc.perform(post(BASE_URI + "/register").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString((modelMapper.map(user1, UserDto.class)))));
 
-        //then
-        response.andExpect(status().isCreated())
-                .andDo(print())
+        // then
+        response.andExpect(status().isCreated()).andDo(print())
                 .andExpect(jsonPath("$.userName", is(user1.getUserName())));
     }
 
     @Test
     void loginTest() throws Exception {
 
-        //given
+        // given
         given(userService.login(any(String.class), any(String.class))).willReturn("Login successful for user user123");
 
-        //when
-        ResultActions response = mockMvc.perform(get(BASE_URI + "/login")
-                .param("username", "user123")
-                .param("password", "password"));
+        // when
+        ResultActions response = mockMvc
+                .perform(get(BASE_URI + "/login").param("username", "user123").param("password", "password"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(content().string("Login successful for user user123"))
+        // then
+        response.andExpect(status().isOk()).andExpect(content().string("Login successful for user user123"))
                 .andDo(print());
     }
 
     @Test
     void forgotPasswordTest() throws Exception {
 
-        //given
-        given(userService.forgotPassword(any(String.class), any(String.class))).willReturn("Password successfully changed for user user123");
+        // given
+        given(userService.forgotPassword(any(String.class), any(String.class)))
+                .willReturn("Password successfully changed for user user123");
 
-        //when
-        ResultActions response = mockMvc.perform(get(BASE_URI + "/forgot")
-                .param("email", "email@test.com")
-                .param("newPassword", "newPassword"));
+        // when
+        ResultActions response = mockMvc.perform(
+                get(BASE_URI + "/forgot").param("email", "email@test.com").param("newPassword", "newPassword"));
 
-        //then
+        // then
         response.andExpect(status().isOk())
-                .andExpect(content().string("Password successfully changed for user user123"))
-                .andDo(print());
+                .andExpect(content().string("Password successfully changed for user user123")).andDo(print());
     }
 
     @Test
     void showAllUsersTest() throws Exception {
 
-        //given
+        // given
         given(userService.getAllUsers()).willReturn(List.of(user1, user2));
 
-        //when
+        // when
         ResultActions response = mockMvc.perform(get(BASE_URI + "/users/all"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(2)))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andExpect(jsonPath("$.size()", is(2))).andDo(print());
     }
 
     @Test
     void showUsersContainingUsernameTest() throws Exception {
 
-        //given
+        // given
         given(userService.getUserByUsername("user")).willReturn(List.of(user1, user2));
 
-        //when
-        ResultActions response = mockMvc.perform(get(BASE_URI + "/users/search")
-                .param("username", "user"));
+        // when
+        ResultActions response = mockMvc.perform(get(BASE_URI + "/users/search").param("username", "user"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(2)))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andExpect(jsonPath("$.size()", is(2))).andDo(print());
     }
 
     @Test
     void postTweetEventTest() throws Exception {
 
-        //given
-        TweetEvent tweetEvent = TweetEvent.builder()
-                .id(null)
-                .tweet(modelMapper.map(tweet1, TweetDto.class))
-                .build();
+        // given
+        TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(modelMapper.map(tweet1, TweetDto.class)).build();
 
-        given(tweetEventProducer.sendTweetEvent(isA(TweetEvent.class))).willReturn(null);
+        given(kafkaEventProducer.tweetHandler(isA(TweetEvent.class))).willReturn(null);
 
-        //when
-        ResultActions response = mockMvc.perform(post(BASE_URI + "/user123/add")
-                .contentType(MediaType.APPLICATION_JSON)
+        // when
+        ResultActions response = mockMvc.perform(post(BASE_URI + "/user123/add").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tweetEvent)));
 
-        //then
-        response.andExpect(status().isCreated())
-                .andDo(print());
+        // then
+        response.andExpect(status().isCreated()).andDo(print());
     }
 
     @Test
     void postTweetEvent4xxTest() throws Exception {
 
-        //given
-        TweetDto tweet = TweetDto.builder()
-                .content(null)
-                .build();
+        // given
+        TweetDto tweet = TweetDto.builder().content(null).build();
 
-        TweetEvent tweetEvent = TweetEvent.builder()
-                .id(null)
-                .tweet(tweet)
-                .build();
+        TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(tweet).build();
 
-        given(tweetEventProducer.sendTweetEvent(isA(TweetEvent.class))).willReturn(null);
+        given(kafkaEventProducer.tweetHandler(isA(TweetEvent.class))).willReturn(null);
 
-        //when
-        String expectedErrorMessge = "tweet.content-tweet cannot be empty";
+        // when
+        String expectedErrorMessage = "tweet.content-tweet cannot be empty";
 
-        ResultActions response = mockMvc.perform(post(BASE_URI + "/user123/add")
-                .contentType(MediaType.APPLICATION_JSON)
+        ResultActions response = mockMvc.perform(post(BASE_URI + "/user123/add").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tweetEvent)));
 
-        //then
-        response.andExpect(status().is4xxClientError())
-                .andExpect(content().string(expectedErrorMessge))
+        // then
+        response.andExpect(status().is4xxClientError()).andExpect(content().string(expectedErrorMessage))
                 .andDo(print());
     }
 
     @Test
     void putTweetEventTest() throws Exception {
 
-        //given
-        TweetEvent tweetEvent = TweetEvent.builder()
-                .id(null)
-                .tweet(modelMapper.map(tweet1, TweetDto.class))
-                .build();
+        // given
+        TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(modelMapper.map(tweet1, TweetDto.class)).build();
 
-        given(tweetEventProducer.sendTweetEvent(isA(TweetEvent.class))).willReturn(null);
+        given(kafkaEventProducer.tweetHandler(isA(TweetEvent.class))).willReturn(null);
 
-        //when
+        // when
         ResultActions response = mockMvc.perform(put(BASE_URI + "/user123/edit/Tweet-1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(tweetEvent)));
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(tweetEvent)));
 
-        //then
-        response.andExpect(status().isOk())
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andDo(print());
     }
 
     @Test
     void putTweetEvent4xxTest() throws Exception {
 
-        //given
-        TweetDto tweet = TweetDto.builder()
-                .content(null)
-                .build();
+        // given
+        TweetDto tweet = TweetDto.builder().content(null).build();
 
-        TweetEvent tweetEvent = TweetEvent.builder()
-                .id(null)
-                .tweet(tweet)
-                .build();
+        TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(tweet).build();
 
-        given(tweetEventProducer.sendTweetEvent(isA(TweetEvent.class))).willReturn(null);
+        given(kafkaEventProducer.tweetHandler(isA(TweetEvent.class))).willReturn(null);
 
-        //when
-        String expectedErrorMessge = "tweet.content-tweet cannot be empty";
+        // when
+        String expectedErrorMessage = "tweet.content-tweet cannot be empty";
 
         ResultActions response = mockMvc.perform(put(BASE_URI + "/user123/edit/Tweet-1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(tweetEvent)));
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(tweetEvent)));
 
-        //then
-        response.andExpect(status().is4xxClientError())
-                .andExpect(content().string(expectedErrorMessge))
+        // then
+        response.andExpect(status().is4xxClientError()).andExpect(content().string(expectedErrorMessage))
                 .andDo(print());
     }
 }

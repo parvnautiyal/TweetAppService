@@ -12,15 +12,15 @@ import static com.iiht.usecase.tweetapp.util.Constants.IN_REQUEST_LOG;
 
 @Component
 @Slf4j
-public class TweetEventConsumer {
+public class ReplyEventConsumer {
 
     @Autowired
     private TweetService tweetService;
 
-    @KafkaListener(topics = { "tweet-event" })
-    public void onMessage(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
+    @KafkaListener(topics = { "reply-event" })
+    public void onMessage(ConsumerRecord<Integer, String> consumer) throws JsonProcessingException {
         log.info(IN_REQUEST_LOG, "onMessage", "Consuming message");
-        tweetService.processTweetEvent(consumerRecord);
+        tweetService.processReplyEvent(consumer);
         log.info("Message consumed Successfully");
     }
 }

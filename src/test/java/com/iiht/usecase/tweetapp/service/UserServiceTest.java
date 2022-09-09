@@ -31,146 +31,149 @@ class UserServiceTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private User user1,user2;
+    private User user1, user2;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         user1 = UserUtil.returnUserOne();
         user2 = UserUtil.returnUserTwo();
     }
 
     @Test
-    void registerTest(){
+    void registerTest() {
 
-        //given
+        // given
         given(userRepository.findByUserNameOrEmail(user1.getUserName(), user1.getEmail())).willReturn(Optional.empty());
         given(userRepository.save(user1)).willReturn(user1);
 
-        //when
+        // when
         User savedUser = userService.registerUser(user1);
 
-        //then
+        // then
         assertThat(savedUser).isNotNull().hasToString(user1.toString());
     }
 
     @Test
-    void registerExceptionTest(){
+    void registerExceptionTest() {
 
-        //given
-        given(userRepository.findByUserNameOrEmail(user1.getUserName(), user1.getEmail())).willReturn(Optional.of(user1));
+        // given
+        given(userRepository.findByUserNameOrEmail(user1.getUserName(), user1.getEmail()))
+                .willReturn(Optional.of(user1));
 
-        //when
-        assertThrows(TweetAppException.class,()->userService.registerUser(user1));
+        // when
+        assertThrows(TweetAppException.class, () -> userService.registerUser(user1));
 
-        //then
+        // then
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    void loginAndForgotPasswordTest(){
+    void loginAndForgotPasswordTest() {
 
-        //given
-        given(userRepository.findByUserNameAndPassword(user1.getUserName(),user1.getPassword())).willReturn(Optional.of(user1));
-        given(userRepository.findByUserNameOrEmail(null,user1.getEmail())).willReturn(Optional.of(user1));
+        // given
+        given(userRepository.findByUserNameAndPassword(user1.getUserName(), user1.getPassword()))
+                .willReturn(Optional.of(user1));
+        given(userRepository.findByUserNameOrEmail(null, user1.getEmail())).willReturn(Optional.of(user1));
 
-        //when
-        String actualLogin = userService.login(user1.getUserName(),user1.getPassword());
-        String actualForgotPassword = userService.forgotPassword(user1.getEmail(),"New Password");
+        // when
+        String actualLogin = userService.login(user1.getUserName(), user1.getPassword());
+        String actualForgotPassword = userService.forgotPassword(user1.getEmail(), "New Password");
 
-        //then
-        assertThat(actualLogin).isEqualTo("Login successful for user "+user1.getUserName());
+        // then
+        assertThat(actualLogin).isEqualTo("Login successful for user " + user1.getUserName());
         assertThat(actualForgotPassword).isEqualTo("Password successfully changed for user " + user1.getUserName());
         assertThat(user1.getPassword()).isEqualTo("New Password");
     }
 
     @Test
-    void loginAndForgotPasswordExceptionTest(){
+    void loginAndForgotPasswordExceptionTest() {
 
-        //given
-        given(userRepository.findByUserNameAndPassword(user1.getUserName(),user1.getPassword())).willReturn(Optional.empty());
-        given(userRepository.findByUserNameOrEmail(null,user1.getEmail())).willReturn(Optional.empty());
+        // given
+        given(userRepository.findByUserNameAndPassword(user1.getUserName(), user1.getPassword()))
+                .willReturn(Optional.empty());
+        given(userRepository.findByUserNameOrEmail(null, user1.getEmail())).willReturn(Optional.empty());
 
-        //when
-        assertThrows(TweetAppException.class,()->userService.login("Test User","password"));
-        assertThrows(TweetAppException.class,()->userService.forgotPassword("email@test.com","New Password"));
+        // when
+        assertThrows(TweetAppException.class, () -> userService.login("Test User", "password"));
+        assertThrows(TweetAppException.class, () -> userService.forgotPassword("email@test.com", "New Password"));
 
-        //then
+        // then
     }
 
     @Test
-    void getAllUsersTest(){
+    void getAllUsersTest() {
 
-        //given
-        given(userRepository.findAll()).willReturn(List.of(user1,user2));
+        // given
+        given(userRepository.findAll()).willReturn(List.of(user1, user2));
 
-        //when
+        // when
         List<User> users = userService.getAllUsers();
 
-        //then
-        assertThat(users).isNotNull().hasSize(2).containsExactlyInAnyOrderElementsOf(List.of(user1,user2));
-        verify(userRepository,times(1)).findAll();
+        // then
+        assertThat(users).isNotNull().hasSize(2).containsExactlyInAnyOrderElementsOf(List.of(user1, user2));
+        verify(userRepository, times(1)).findAll();
     }
 
     @Test
-    void getAllUsersExceptionTest(){
+    void getAllUsersExceptionTest() {
 
-        //given
+        // given
         given(userRepository.findAll()).willReturn(Collections.emptyList());
 
-        //when
-       assertThrows(TweetAppException.class,()->userService.getAllUsers());
+        // when
+        assertThrows(TweetAppException.class, () -> userService.getAllUsers());
 
-       //then
-        verify(userRepository,times(1)).findAll();
+        // then
+        verify(userRepository, times(1)).findAll();
     }
 
     @Test
-    void getUserByUsernameTest(){
+    void getUserByUsernameTest() {
 
-        //given
-        given(userRepository.findUserByUserNameContaining("Test")).willReturn(List.of(user1,user2));
+        // given
+        given(userRepository.findUserByUserNameContaining("Test")).willReturn(List.of(user1, user2));
 
-        //then
+        // then
         List<User> users = userService.getUserByUsername("Test");
 
-        //then
-        assertThat(users).isNotNull().hasSize(2).containsExactlyInAnyOrderElementsOf(List.of(user1,user2));
-        verify(userRepository,times(1)).findUserByUserNameContaining(any());
+        // then
+        assertThat(users).isNotNull().hasSize(2).containsExactlyInAnyOrderElementsOf(List.of(user1, user2));
+        verify(userRepository, times(1)).findUserByUserNameContaining(any());
     }
 
     @Test
-    void getUserByUsernameExceptionTest(){
+    void getUserByUsernameExceptionTest() {
 
-        //given
+        // given
         given(userRepository.findUserByUserNameContaining("Test")).willReturn(Collections.emptyList());
 
-        //then
-        assertThrows(TweetAppException.class,()->userService.getUserByUsername("Test"));
+        // then
+        assertThrows(TweetAppException.class, () -> userService.getUserByUsername("Test"));
 
-        //then
-        verify(userRepository,times(1)).findUserByUserNameContaining(any());
+        // then
+        verify(userRepository, times(1)).findUserByUserNameContaining(any());
     }
 
     @Test
-    void getUserByEmailTest(){
+    void getUserByEmailTest() {
 
-        //given
-        given(userRepository.findByUserNameOrEmail(null,user1.getEmail())).willReturn(Optional.of(user1));
+        // given
+        given(userRepository.findByUserNameOrEmail(null, user1.getEmail())).willReturn(Optional.of(user1));
 
-        //when
+        // when
         User user = userService.getUserByEmail(user1.getEmail());
 
-        //then
+        // then
         assertThat(user).isNotNull().isEqualTo(user1);
     }
 
     @Test
-    void getUserByEmailExceptionTest(){
+    void getUserByEmailExceptionTest() {
 
-        //given
-        given(userRepository.findByUserNameOrEmail(null,user1.getEmail())).willReturn(Optional.empty());
+        // given
+        given(userRepository.findByUserNameOrEmail(null, user1.getEmail())).willReturn(Optional.empty());
 
-        //when
-        assertThrows(TweetAppException.class,()->userService.getUserByEmail("email@test.com"));
+        // when
+        assertThrows(TweetAppException.class, () -> userService.getUserByEmail("email@test.com"));
     }
 }

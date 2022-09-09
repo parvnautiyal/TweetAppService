@@ -12,11 +12,11 @@ import javax.validation.constraints.Pattern;
 @NoArgsConstructor
 @Builder
 @ToString
-@JsonPropertyOrder({"userName","firstName","lastName","gender","dob","email","password"})
+@JsonPropertyOrder({ "userName", "firstName", "lastName", "gender", "dob", "email", "password" })
 public class UserDto {
 
     @NotBlank(message = "username cannot be null")
-    @Pattern(regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$",message = "Invalid userName")
+    @Pattern(regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$", message = "Invalid userName")
     private String userName;
 
     @NotBlank(message = "firstName cannot be null")

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TweetRepository extends MongoRepository<Tweet,String> {
+public interface TweetRepository extends MongoRepository<Tweet, String> {
 
     List<Tweet> findTweetByUsername(String username);
 }

@@ -1,6 +1,8 @@
 package com.iiht.usecase.tweetapp.controller;
 
+import com.iiht.usecase.tweetapp.domain.ReplyEvent;
 import com.iiht.usecase.tweetapp.entity.Tweet;
+import com.iiht.usecase.tweetapp.producer.KafkaEventProducer;
 import com.iiht.usecase.tweetapp.service.TweetService;
 import com.iiht.usecase.tweetapp.util.TweetsUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,7 @@ import java.util.List;
 import static com.iiht.usecase.tweetapp.util.Constants.BASE_URI;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -36,10 +39,13 @@ class TweetControllerTest {
     @MockBean
     private TweetService tweetService;
 
-    private Tweet tweet1,tweet2;
+    @MockBean
+    private KafkaEventProducer kafkaEventProducer;
+
+    private Tweet tweet1, tweet2;
 
     @BeforeEach
-    void setup(){
+    void setup() {
 
         tweet1 = TweetsUtil.returnTweetOne();
         tweet2 = TweetsUtil.returnTweetTwo();
@@ -48,77 +54,65 @@ class TweetControllerTest {
     @Test
     void showAllTweetsTest() throws Exception {
 
-        //given
-        given(tweetService.getAllTweets()).willReturn(List.of(tweet1,tweet2));
+        // given
+        given(tweetService.getAllTweets()).willReturn(List.of(tweet1, tweet2));
 
-        //when
-        ResultActions response = mockMvc.perform(get(BASE_URI+"/all"));
+        // when
+        ResultActions response = mockMvc.perform(get(BASE_URI + "/all"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(2)))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andExpect(jsonPath("$.size()", is(2))).andDo(print());
     }
 
     @Test
     void showTweetsOfUserTest() throws Exception {
 
-        //given
+        // given
         given(tweetService.getTweetsOfUser(any())).willReturn(List.of(tweet1));
 
-        //when
-        ResultActions response = mockMvc.perform(get(BASE_URI+"/Test User"));
+        // when
+        ResultActions response = mockMvc.perform(get(BASE_URI + "/Test User"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()",is(1)))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andExpect(jsonPath("$.size()", is(1))).andDo(print());
     }
 
     @Test
-    void deleteTweet() throws Exception{
+    void deleteTweet() throws Exception {
 
-        //given
+        // given
         given(tweetService.deleteTweet(any())).willReturn("Tweet with id Tweet-1 deleted");
 
-        //when
-        ResultActions response = mockMvc.perform(delete(BASE_URI+"/Test User/delete/Tweet-1"));
+        // when
+        ResultActions response = mockMvc.perform(delete(BASE_URI + "/Test User/delete/Tweet-1"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(content().string("Tweet with id Tweet-1 deleted"))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andExpect(content().string("Tweet with id Tweet-1 deleted")).andDo(print());
     }
 
     @Test
-    void likeTweet() throws Exception{
+    void likeTweet() throws Exception {
 
-        //given
-        given(tweetService.likeTweet(any(),any())).willReturn("Post liked by user Test User");
+        // given
+        given(tweetService.likeTweet(any(), any())).willReturn("Post liked by user Test User");
 
-        //when
-        ResultActions response = mockMvc.perform(put(BASE_URI+"/Test User/like/Tweet-1"));
+        // when
+        ResultActions response = mockMvc.perform(put(BASE_URI + "/Test User/like/Tweet-1"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(content().string("Post liked by user Test User"))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andExpect(content().string("Post liked by user Test User")).andDo(print());
     }
 
     @Test
-    void replyTweetTest() throws Exception{
+    void postReplyEventTest() throws Exception {
 
-        //given
-        given(tweetService.replyTweet(any(),any(),any())).willReturn("Post replied by user Test User");
+        given(kafkaEventProducer.replyHandler(isA(ReplyEvent.class))).willReturn(null);
 
-        //when
-        ResultActions response = mockMvc.perform(post(BASE_URI+"/Test User/reply/Tweet-1")
-                .contentType(MediaType.TEXT_HTML)
-                .content("Test Reply"));
+        // when
+        ResultActions response = mockMvc.perform(
+                post(BASE_URI + "testUser/reply/testTweet").contentType(MediaType.TEXT_PLAIN).content("testReply"));
 
-        //then
-        response.andExpect(status().isOk())
-                .andExpect(content().string("Post replied by user Test User"))
-                .andDo(print());
+        // then
+        response.andExpect(status().isOk()).andDo(print());
     }
 }

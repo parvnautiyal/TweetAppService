@@ -38,7 +38,7 @@ class TweetServiceTest {
     @InjectMocks
     private TweetServiceImpl tweetService;
 
-    private Tweet tweet1,tweet2;
+    private Tweet tweet1, tweet2;
     private User user;
 
     @BeforeEach
@@ -51,137 +51,109 @@ class TweetServiceTest {
     @Test
     void getAllTweetsTest() {
 
-        //given
-        given(tweetRepository.findAll()).willReturn(List.of(tweet1,tweet2));
+        // given
+        given(tweetRepository.findAll()).willReturn(List.of(tweet1, tweet2));
 
-        //when
+        // when
         List<Tweet> tweets = tweetService.getAllTweets();
 
-        //then
-        assertThat(tweets).isNotNull().hasSize(2).containsExactlyInAnyOrderElementsOf(List.of(tweet1,tweet2));
-        verify(tweetRepository,times(1)).findAll();
+        // then
+        assertThat(tweets).isNotNull().hasSize(2).containsExactlyInAnyOrderElementsOf(List.of(tweet1, tweet2));
+        verify(tweetRepository, times(1)).findAll();
     }
 
     @Test
     void getAllTweetsExceptionTest() {
 
-        //given
+        // given
         given(tweetRepository.findAll()).willReturn(Collections.emptyList());
 
-        //when
-        assertThrows(TweetAppException.class,()->tweetService.getAllTweets());
+        // when
+        assertThrows(TweetAppException.class, () -> tweetService.getAllTweets());
 
-        //then
-        verify(tweetRepository,times(1)).findAll();
+        // then
+        verify(tweetRepository, times(1)).findAll();
     }
 
     @Test
     void getTweetsOfUserTest() {
 
-        //given
+        // given
         given(tweetRepository.findTweetByUsername(any(String.class))).willReturn(List.of(tweet1));
 
-        //when
+        // when
         List<Tweet> tweets = tweetService.getTweetsOfUser("Test User");
 
-        //then
+        // then
         assertThat(tweets).isNotNull().hasSize(1).containsExactlyInAnyOrderElementsOf(List.of(tweet1));
-        verify(tweetRepository,times(1)).findTweetByUsername(any(String.class));
+        verify(tweetRepository, times(1)).findTweetByUsername(any(String.class));
     }
 
     @Test
     void getTweetsOfUserExceptionTest() {
 
-        //given
+        // given
         given(tweetRepository.findTweetByUsername("Test User")).willReturn(Collections.emptyList());
 
-        //when
-        assertThrows(TweetAppException.class,()->tweetService.getTweetsOfUser("Test User"));
+        // when
+        assertThrows(TweetAppException.class, () -> tweetService.getTweetsOfUser("Test User"));
 
-        //then
-        verify(tweetRepository,times(1)).findTweetByUsername(any(String.class));
+        // then
+        verify(tweetRepository, times(1)).findTweetByUsername(any(String.class));
     }
 
     @Test
     void deleteTweetTest() {
 
-        //given
+        // given
         given(tweetRepository.findById("Tweet-1")).willReturn(Optional.of(tweet1));
         willDoNothing().given(tweetRepository).deleteById("Tweet-1");
 
-        //when
+        // when
         tweetService.deleteTweet("Tweet-1");
 
-        //then
-        verify(tweetRepository,times(1)).deleteById("Tweet-1");
+        // then
+        verify(tweetRepository, times(1)).deleteById("Tweet-1");
     }
 
     @Test
     void deleteTweetExceptionTest() {
 
-        //given
+        // given
         given(tweetRepository.findById("Tweet-1")).willReturn(Optional.empty());
 
-        //when
-        assertThrows(TweetAppException.class,()->tweetService.deleteTweet("Tweet-1"));
+        // when
+        assertThrows(TweetAppException.class, () -> tweetService.deleteTweet("Tweet-1"));
 
-        //then
-        verify(tweetRepository,times(0)).deleteById("Tweet-1");
+        // then
+        verify(tweetRepository, times(0)).deleteById("Tweet-1");
     }
 
     @Test
-    void likeTweetTest(){
+    void likeTweetTest() {
 
-        //given
+        // given
         given(tweetRepository.findById("Tweet-1")).willReturn(Optional.of(tweet1));
         given(userRepository.findByUserName("Test User")).willReturn(Optional.of(user));
 
-        //when
-        String actual = tweetService.likeTweet("Test User","Tweet-1");
+        // when
+        String actual = tweetService.likeTweet("Test User", "Tweet-1");
 
-        //then
+        // then
         assertThat(actual).isEqualTo("Post liked by user Test User");
-        assertThat(tweet1.getLikes()).containsEntry("Test User","Tweet-1");
+        assertThat(tweet1.getLikes()).containsEntry("Test User", "Tweet-1");
     }
 
     @Test
-    void likeTweetException(){
+    void likeTweetException() {
 
-        //given
+        // given
         given(tweetRepository.findById("Tweet-1")).willReturn(Optional.empty());
 
-        //when
-        assertThrows(TweetAppException.class,()->tweetService.likeTweet("Test User","Tweet-1"));
+        // when
+        assertThrows(TweetAppException.class, () -> tweetService.likeTweet("Test User", "Tweet-1"));
 
-        //then
-        verify(tweetRepository,times(0)).save(any());
-    }
-
-    @Test
-    void replyTweetTest(){
-
-        //given
-        given(tweetRepository.findById("Tweet-1")).willReturn(Optional.of(tweet1));
-        given(userRepository.findByUserName("Test User")).willReturn(Optional.of(user));
-
-        //when
-        String actual = tweetService.replyTweet("Test User","Tweet-1","Test Reply");
-
-        //then
-        assertThat(actual).isEqualTo("Post replied by user Test User");
-        assertThat(tweet1.getReplies()).containsEntry("Test User",List.of("Test Reply"));
-    }
-
-    @Test
-    void replyTweetException(){
-
-        //given
-        given(tweetRepository.findById("Tweet-1")).willReturn(Optional.empty());
-
-        //when
-        assertThrows(TweetAppException.class,()->tweetService.replyTweet("Test User","Tweet-1","Test Reply"));
-
-        //then
-        verify(tweetRepository,times(0)).save(any());
+        // then
+        verify(tweetRepository, times(0)).save(any());
     }
 }

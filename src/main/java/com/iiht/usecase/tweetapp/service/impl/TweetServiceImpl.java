@@ -2,7 +2,9 @@ package com.iiht.usecase.tweetapp.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iiht.usecase.tweetapp.domain.ReplyEvent;
 import com.iiht.usecase.tweetapp.domain.TweetEvent;
+import com.iiht.usecase.tweetapp.entity.Reply;
 import com.iiht.usecase.tweetapp.entity.Tweet;
 import com.iiht.usecase.tweetapp.entity.User;
 import com.iiht.usecase.tweetapp.entity.dto.TweetDto;
@@ -33,6 +35,7 @@ public class TweetServiceImpl implements TweetService {
     private ModelMapper modelMapper;
     @Autowired
     private ObjectMapper objectMapper;
+
     @Override
     public List<Tweet> getAllTweets() {
         log.info(IN_REQUEST_LOG, "getAllTweets", "Service method to get all tweets");
@@ -46,6 +49,7 @@ public class TweetServiceImpl implements TweetService {
             return foundTweets;
         }
     }
+
     @Override
     public List<Tweet> getTweetsOfUser(String username) {
         log.info(IN_REQUEST_LOG, "getTweetsOfUser", "Service method to get all tweets of a user");
@@ -59,6 +63,7 @@ public class TweetServiceImpl implements TweetService {
             return foundTweets;
         }
     }
+
     @Override
     public String deleteTweet(String id) {
         log.info(IN_REQUEST_LOG, "deleteTweet", "Service method to delete a tweet by id");
@@ -68,8 +73,10 @@ public class TweetServiceImpl implements TweetService {
             tweetRepository.deleteById(id);
             log.debug(EXITING_RESPONSE_LOG, "deleteTweet", SUCCESS);
             return "Tweet with id " + id + " deleted";
-        } else throw new TweetAppException(HttpStatus.NOT_FOUND, "Tweet not found");
+        } else
+            throw new TweetAppException(HttpStatus.NOT_FOUND, "Tweet not found");
     }
+
     @Override
     public String likeTweet(String username, String tweetId) {
         log.info(IN_REQUEST_LOG, "likeTweet", "Service method to like a tweet");
@@ -95,46 +102,39 @@ public class TweetServiceImpl implements TweetService {
             return "Post liked by user " + username;
         }
     }
-    @Override
-    public String replyTweet(String username, String tweetId, String reply) {
-        log.info(IN_REQUEST_LOG, "replyTweet", "Service method to reply a tweet");
-        log.info(VALIDATION);
-        Optional<Tweet> tweetOptional = tweetRepository.findById(tweetId);
-        Optional<User> userOptional = userRepository.findByUserName(username);
-        if (tweetOptional.isEmpty() || userOptional.isEmpty())
-            throw new TweetAppException(HttpStatus.BAD_REQUEST, "Invalid parameters");
-        else {
-            tweetOptional.ifPresent(tweet -> {
-                Map<String, List<String>> replyMap;
-                List<String> replyList;
-                if (tweet.getReplies() == null) {
-                    replyMap = new HashMap<>();
-                    replyList = new ArrayList<>();
-                } else {
-                    replyMap = new HashMap<>(tweet.getReplies());
-                    if(!replyMap.containsKey(username))
-                        replyList = new ArrayList<>();
-                    else replyList = replyMap.get(username);
-                }
-                replyList.add(reply);
-                replyMap.put(username, replyList);
-                tweet.setReplies(replyMap);
-                tweetRepository.save(tweet);
-            });
-            log.debug(EXITING_RESPONSE_LOG, "replyTweet", "replied by " + username);
-            log.info(SUCCESS);
-            return "Post replied by user " + username;
-        }
-    }
+
     @Override
     public void processTweetEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
         TweetEvent tweetEvent = objectMapper.readValue(consumerRecord.value(), TweetEvent.class);
         switch (tweetEvent.getTweetEventType()) {
-            case POST -> save(tweetEvent);
-            case UPDATE -> update(tweetEvent);
-            default -> log.info("invalid library event type");
+        case POST -> save(tweetEvent);
+        case UPDATE -> update(tweetEvent);
+        default -> log.info("invalid tweet event type");
         }
     }
+
+    @Override
+    public void processReplyEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
+        ReplyEvent replyEvent = objectMapper.readValue(consumerRecord.value(), ReplyEvent.class);
+        reply(replyEvent);
+    }
+
+    private void reply(ReplyEvent replyEvent) {
+        tweetRepository.findById(replyEvent.getReply().getTweetId()).ifPresentOrElse(tweet -> {
+            List<Reply> replies;
+            if (tweet.getReplies() == null) {
+                replies = new ArrayList<>();
+            } else {
+                replies = new ArrayList<>(tweet.getReplies());
+            }
+            replies.add(replyEvent.getReply());
+            tweet.setReplies(replies);
+            tweetRepository.save(tweet);
+        }, () -> {
+            throw new IllegalArgumentException("not a valid reply event");
+        });
+    }
+
     private void update(TweetEvent tweetEvent) {
         Optional<Tweet> tweet = tweetRepository.findById(tweetEvent.getTweet().getId());
         if (tweet.isPresent()) {
@@ -142,14 +142,13 @@ public class TweetServiceImpl implements TweetService {
             log.info("Record updating");
             tweetRepository.save(tweet.get());
             log.info(SUCCESS);
-        } else throw new IllegalArgumentException("not a valid tweet event");
+        } else
+            throw new IllegalArgumentException("not a valid tweet event");
     }
+
     private void save(TweetEvent tweetEvent) {
-        TweetDto tweet = TweetDto.builder()
-                .content(tweetEvent.getTweet().getContent())
-                .created(tweetEvent.getTweet().getCreated())
-                .username(tweetEvent.getTweet().getUsername())
-                .build();
+        TweetDto tweet = TweetDto.builder().content(tweetEvent.getTweet().getContent())
+                .created(tweetEvent.getTweet().getCreated()).username(tweetEvent.getTweet().getUsername()).build();
         log.info("Record saving");
         tweetRepository.save(modelMapper.map(tweet, Tweet.class));
         log.info(SUCCESS);

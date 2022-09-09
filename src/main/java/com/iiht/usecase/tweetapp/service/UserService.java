@@ -18,5 +18,5 @@ public interface UserService {
 
     List<User> getUserByUsername(String matcher);
 
-   User getUserByEmail(String email);
+    User getUserByEmail(String email);
 }

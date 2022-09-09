@@ -43,20 +43,22 @@ public class UserServiceImpl implements UserService {
         if (foundUser.isPresent()) {
             log.info(SUCCESS);
             return "Login successful for user " + foundUser.get().getUserName();
-        } else throw new TweetAppException(HttpStatus.UNAUTHORIZED, "Login Failed!");
+        } else
+            throw new TweetAppException(HttpStatus.UNAUTHORIZED, "Login Failed!");
     }
 
     @Override
     public String forgotPassword(String email, String password) {
         log.info(IN_REQUEST_LOG, "forgotPassword", "Service method to reset password");
         log.info(VALIDATION);
-        Optional<User> user = userRepository.findByUserNameOrEmail(null,email);
+        Optional<User> user = userRepository.findByUserNameOrEmail(null, email);
         if (user.isPresent()) {
             user.get().setPassword(password);
             userRepository.save(user.get());
             log.info(SUCCESS);
             return "Password successfully changed for user " + user.get().getUserName();
-        } else throw new TweetAppException(HttpStatus.BAD_REQUEST, "User does not exist");
+        } else
+            throw new TweetAppException(HttpStatus.BAD_REQUEST, "User does not exist");
     }
 
     @Override
@@ -98,6 +100,7 @@ public class UserServiceImpl implements UserService {
             log.debug(EXITING_RESPONSE_LOG, "getUserByEmail", foundUser);
             log.info(SUCCESS);
             return foundUser;
-        } else throw new TweetAppException(HttpStatus.BAD_REQUEST, "User does not exist");
+        } else
+            throw new TweetAppException(HttpStatus.BAD_REQUEST, "User does not exist");
     }
 }

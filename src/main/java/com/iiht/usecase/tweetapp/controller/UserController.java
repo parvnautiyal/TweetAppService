@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.iiht.usecase.tweetapp.domain.TweetEvent;
 import com.iiht.usecase.tweetapp.entity.User;
 import com.iiht.usecase.tweetapp.entity.dto.UserDto;
-import com.iiht.usecase.tweetapp.producer.TweetEventProducer;
+import com.iiht.usecase.tweetapp.producer.KafkaEventProducer;
 import com.iiht.usecase.tweetapp.service.UserService;
 import com.iiht.usecase.tweetapp.util.TweetEventType;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class UserController {
     private ModelMapper modelMapper;
 
     @Autowired
-    private TweetEventProducer tweetEventProducer;
+    private KafkaEventProducer kafkaEventProducer;
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> registerUser(@RequestBody @Valid UserDto user) {
@@ -47,7 +48,8 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public ResponseEntity<String> login(@RequestParam("username") String username, @RequestParam("password") String password) {
+    public ResponseEntity<String> login(@RequestParam("username") String username,
+            @RequestParam("password") String password) {
         log.info(IN_REQUEST_LOG, "login", "Attempting to login");
         String loginResult = userService.login(username, password);
         log.info(SUCCESS);
@@ -55,7 +57,8 @@ public class UserController {
     }
 
     @GetMapping("/forgot")
-    public ResponseEntity<String> forgotPassword(@RequestParam("newPassword") String password, @RequestParam("email") String email) {
+    public ResponseEntity<String> forgotPassword(@RequestParam("newPassword") String password,
+            @RequestParam("email") String email) {
         log.info(IN_REQUEST_LOG, "forgotPassword", "User requesting a password change");
         String forgotPasswordResult = userService.forgotPassword(email, password);
         log.info(SUCCESS);
@@ -81,26 +84,30 @@ public class UserController {
     }
 
     @PostMapping("/{username}/add")
-    public ResponseEntity<TweetEvent> postTweetEvent(@PathVariable("username") String username, @RequestBody @Valid TweetEvent tweetEvent) throws JsonProcessingException {
+    public ResponseEntity<TweetEvent> postTweetEvent(@PathVariable("username") String username,
+            @RequestBody @Valid TweetEvent tweetEvent) throws JsonProcessingException {
         log.info(IN_REQUEST_LOG, "postTweetEvent", "Building a new tweet to post into event streaming platform");
         tweetEvent.setTweetEventType(TweetEventType.POST);
         tweetEvent.getTweet().setUsername(username);
-        tweetEvent.getTweet().setCreated(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()));
+        tweetEvent.getTweet()
+                .setCreated(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()));
         tweetEvent.getTweet().setLikes(new HashMap<>());
-        tweetEvent.getTweet().setReplies(new HashMap<>());
+        tweetEvent.getTweet().setReplies(new ArrayList<>());
         log.debug(IN_REQUEST_LOG, "postTweetEvent", "tweet build completed, now posting, tweet " + tweetEvent);
-        tweetEventProducer.sendTweetEvent(tweetEvent);
+        kafkaEventProducer.tweetHandler(tweetEvent);
         log.info(SUCCESS);
         return ResponseEntity.status(HttpStatus.CREATED).body(tweetEvent);
     }
 
     @PutMapping("/{username}/edit/{tweetId}")
-    public ResponseEntity<TweetEvent> putTweetEvent(@PathVariable("username") String username, @PathVariable("tweetId") String tweetId, @RequestBody @Valid TweetEvent tweetEvent) throws JsonProcessingException {
+    public ResponseEntity<TweetEvent> putTweetEvent(@PathVariable("username") String username,
+            @PathVariable("tweetId") String tweetId, @RequestBody @Valid TweetEvent tweetEvent)
+            throws JsonProcessingException {
         log.info(IN_REQUEST_LOG, "putTweetEvent", "Sending tweetEvent to update a tweet");
         tweetEvent.getTweet().setId(tweetId);
         tweetEvent.setTweetEventType(TweetEventType.UPDATE);
         log.debug(IN_REQUEST_LOG, "putTweetEvent", "tweet build completed, now posting, tweet " + tweetEvent);
-        tweetEventProducer.sendTweetEvent(tweetEvent);
+        kafkaEventProducer.tweetHandler(tweetEvent);
         log.info(SUCCESS);
         return ResponseEntity.status(HttpStatus.OK).body(tweetEvent);
     }

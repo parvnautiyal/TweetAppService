@@ -23,20 +23,19 @@ public class TweetAppGlobalExceptionHandler extends ResponseEntityExceptionHandl
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatus status, WebRequest request){
+            HttpHeaders headers, HttpStatus status, WebRequest request) {
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
         String errorMessage = fieldErrors.stream()
-                .map(fieldError -> fieldError.getField() + "-" + fieldError.getDefaultMessage())
-                .sorted()
+                .map(fieldError -> fieldError.getField() + "-" + fieldError.getDefaultMessage()).sorted()
                 .collect(Collectors.joining(","));
-        log.info(ERROR_LOG,errorMessage);
+        log.info(ERROR_LOG, errorMessage);
         log.error(Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> tweetAppException(TweetAppException exception) {
-        log.info(ERROR_LOG,exception.getData());
+        log.info(ERROR_LOG, exception.getData());
         log.error(Arrays.toString(exception.getStackTrace()));
         return new ResponseEntity<>(exception.getData(), exception.getStatus());
     }

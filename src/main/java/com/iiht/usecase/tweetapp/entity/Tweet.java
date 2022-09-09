@@ -21,6 +21,7 @@ public class Tweet {
     private String username;
     private String content;
     private String created;
+    private String tag;
     private Map<String, String> likes;
-    private Map<String, List<String>> replies;
+    private List<Reply> replies;
 }

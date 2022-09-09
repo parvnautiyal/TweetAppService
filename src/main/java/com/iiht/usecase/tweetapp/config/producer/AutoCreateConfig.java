@@ -9,10 +9,12 @@ import org.springframework.kafka.config.TopicBuilder;
 public class AutoCreateConfig {
 
     @Bean
-    public NewTopic tweetEvent(){
-        return TopicBuilder.name("tweet-event")
-                .partitions(4)
-                .replicas(1)
-                .build();
+    public NewTopic tweetEvent() {
+        return TopicBuilder.name("tweet-event").partitions(4).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic replyEvent() {
+        return TopicBuilder.name("reply-event").partitions(4).replicas(1).build();
     }
 }

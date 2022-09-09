@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public interface TweetService {
 
@@ -17,6 +18,7 @@ public interface TweetService {
 
     String likeTweet(String username, String tweetId);
 
-    String replyTweet(String username, String tweetId,String reply);
     void processTweetEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException;
+
+    void processReplyEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException;
 }

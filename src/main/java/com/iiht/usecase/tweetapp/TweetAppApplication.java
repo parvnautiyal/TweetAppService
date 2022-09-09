@@ -9,10 +9,9 @@ import org.springframework.context.annotation.Bean;
 public class TweetAppApplication {
 
     @Bean
-    public ModelMapper modelMapper(){
+    public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-
 
     public static void main(String[] args) {
         SpringApplication.run(TweetAppApplication.class, args);

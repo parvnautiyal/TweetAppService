@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Setter
 @AllArgsConstructor
-public class TweetAppException extends RuntimeException{
+public class TweetAppException extends RuntimeException {
     private final HttpStatus status;
     private final String data;
 }
