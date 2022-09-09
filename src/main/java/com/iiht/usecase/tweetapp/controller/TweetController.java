@@ -66,6 +66,15 @@ public class TweetController {
         return new ResponseEntity<>(likeResult, HttpStatus.OK);
     }
 
+    @PutMapping("/{username}/dislike/{id}")
+    public ResponseEntity<String> dislikeTweet(@PathVariable("username") String username,
+            @PathVariable("id") String tweetId) {
+        log.info(IN_REQUEST_LOG, "dislikeTweet", "tweet " + tweetId + " disliked by user " + username);
+        String dislikeResult = tweetService.dislikeTweet(username, tweetId);
+        log.info(SUCCESS);
+        return new ResponseEntity<>(dislikeResult, HttpStatus.OK);
+    }
+
     @PostMapping("/{username}/reply/{id}")
     public ResponseEntity<String> replyTweet(@PathVariable("username") String username,
             @PathVariable("id") String tweetId, @RequestBody @NotBlank @Size(max = 50) String replyContent)

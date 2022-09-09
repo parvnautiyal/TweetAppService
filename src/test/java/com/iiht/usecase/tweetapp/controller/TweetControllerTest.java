@@ -104,6 +104,20 @@ class TweetControllerTest {
     }
 
     @Test
+    void dislikeTweet() throws Exception {
+
+        // given
+        given(tweetService.dislikeTweet(any(), any())).willReturn("Post disliked by user Test User");
+
+        // when
+        ResultActions response = mockMvc.perform(put(BASE_URI + "/Test User/dislike/Tweet-1"));
+
+        // then
+        response.andExpect(status().isOk()).andExpect(content().string("Post disliked by user Test User"))
+                .andDo(print());
+    }
+
+    @Test
     void postReplyEventTest() throws Exception {
 
         given(kafkaEventProducer.replyHandler(isA(ReplyEvent.class))).willReturn(null);

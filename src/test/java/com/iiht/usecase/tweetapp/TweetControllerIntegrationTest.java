@@ -35,6 +35,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -190,10 +191,45 @@ class TweetControllerIntegrationTest {
     }
 
     @Test
+    void dislikeTweetTest() throws Exception {
+
+        // given
+        Tweet tweet = Tweet.builder().replies(new ArrayList<>()).tag("tag").content("content").username("user")
+                .id("tweet1").likes(new HashMap<>() {
+                    {
+                        put("user1", "tweet1");
+                    }
+                }).created(null).build();
+
+        User user = User.builder().dob(null).userName("user1").email("test@mail.com").firstName("fname")
+                .lastName("lname").gender("male").password("password").build();
+
+        userRepository.save(user);
+        tweetRepository.save(tweet);
+
+        // when
+        ResultActions response = mockMvc.perform(put(BASE_URI + "/user1/dislike/tweet1"));
+
+        // then
+        response.andExpect(status().isOk()).andExpect(content().string("Post disliked by user user1")).andDo(print());
+    }
+
+    @Test
     void likeTweet4xxTest() throws Exception {
 
         // when
         ResultActions response = mockMvc.perform(put(BASE_URI + "/Test User/like/Tweet-1"));
+
+        // then
+        response.andExpect(status().is4xxClientError()).andExpect(content().string("Invalid parameters"))
+                .andDo(print());
+    }
+
+    @Test
+    void dislikeTweet4xxTest() throws Exception {
+
+        // when
+        ResultActions response = mockMvc.perform(put(BASE_URI + "/Test User/dislike/Tweet-1"));
 
         // then
         response.andExpect(status().is4xxClientError()).andExpect(content().string("Invalid parameters"))

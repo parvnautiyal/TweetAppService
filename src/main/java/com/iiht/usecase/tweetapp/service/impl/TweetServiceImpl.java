@@ -104,6 +104,27 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
+    public String dislikeTweet(String username, String tweetId) {
+        log.info(IN_REQUEST_LOG, "dislikeTweet", "Service method to dislike a tweet");
+        log.info(VALIDATION);
+        Optional<Tweet> tweetOptional = tweetRepository.findById(tweetId);
+        Optional<User> userOptional = userRepository.findByUserName(username);
+        if (tweetOptional.isEmpty() || userOptional.isEmpty())
+            throw new TweetAppException(HttpStatus.BAD_REQUEST, "Invalid parameters");
+        else {
+            tweetOptional.ifPresent(tweet -> {
+                Map<String, String> likeMap = tweet.getLikes();
+                likeMap.remove(username);
+                tweet.setLikes(likeMap);
+                tweetRepository.save(tweet);
+            });
+            log.debug(EXITING_RESPONSE_LOG, "dislikeTweet", "disliked by " + username);
+            log.info(SUCCESS);
+            return "Post disliked by user " + username;
+        }
+    }
+
+    @Override
     public void processTweetEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
         TweetEvent tweetEvent = objectMapper.readValue(consumerRecord.value(), TweetEvent.class);
         switch (tweetEvent.getTweetEventType()) {
@@ -148,7 +169,8 @@ public class TweetServiceImpl implements TweetService {
 
     private void save(TweetEvent tweetEvent) {
         TweetDto tweet = TweetDto.builder().content(tweetEvent.getTweet().getContent())
-                .created(tweetEvent.getTweet().getCreated()).username(tweetEvent.getTweet().getUsername()).build();
+                .created(tweetEvent.getTweet().getCreated()).username(tweetEvent.getTweet().getUsername())
+                .tag(tweetEvent.getTweet().getTag().replaceAll("\\s", "")).build();
         log.info("Record saving");
         tweetRepository.save(modelMapper.map(tweet, Tweet.class));
         log.info(SUCCESS);

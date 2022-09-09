@@ -239,7 +239,7 @@ class UserControllerIntegrationTest {
     @Timeout(5)
     void postTweetEventTest() {
 
-        Tweet tweet = Tweet.builder().content("New Tweet").build();
+        Tweet tweet = Tweet.builder().content("New Tweet").tag("tag").build();
 
         TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(modelMapper.map(tweet, TweetDto.class)).build();
 
@@ -262,12 +262,12 @@ class UserControllerIntegrationTest {
     @Timeout(5)
     void putTweetEventTest() {
 
-        Tweet tweet1 = Tweet.builder().id("Tweet-1").username("user1").content("Test Content")
+        Tweet tweet1 = Tweet.builder().id("Tweet-1").username("user1").tag("tag").content("Test Content")
                 .created("2022/07/28 15:09:48").likes(new HashMap<>()).replies(new ArrayList<>()).build();
 
         tweetRepository.save(tweet1);
 
-        TweetDto tweet = TweetDto.builder().content("Updated Tweet").build();
+        TweetDto tweet = TweetDto.builder().content("Updated Tweet").tag("tag").build();
 
         TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(tweet).build();
 

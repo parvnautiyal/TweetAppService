@@ -6,6 +6,7 @@ import com.iiht.usecase.tweetapp.entity.Reply;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,8 @@ public class TweetDto {
     @NotBlank(message = "tweet cannot be empty")
     @Size(max = 144, message = "tweet should not go beyond 144 characters")
     private String content;
-    @NotBlank(message = "tag cannot be empty")
     @Size(max = 50, message = "tag should not go beyond 50 characters")
+    @Pattern(regexp = "^[A-Za-z0-9 ]+$", message = "invalid tag")
     private String tag;
     private String created;
     private Map<String, String> likes;

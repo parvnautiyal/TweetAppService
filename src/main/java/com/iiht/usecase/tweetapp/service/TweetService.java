@@ -21,4 +21,6 @@ public interface TweetService {
     void processTweetEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException;
 
     void processReplyEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException;
+
+    String dislikeTweet(String username, String tweetId);
 }

@@ -160,7 +160,7 @@ class UserControllerTest {
     void postTweetEvent4xxTest() throws Exception {
 
         // given
-        TweetDto tweet = TweetDto.builder().content(null).build();
+        TweetDto tweet = TweetDto.builder().content(null).tag(null).build();
 
         TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(tweet).build();
 
@@ -197,7 +197,7 @@ class UserControllerTest {
     void putTweetEvent4xxTest() throws Exception {
 
         // given
-        TweetDto tweet = TweetDto.builder().content(null).build();
+        TweetDto tweet = TweetDto.builder().content(null).tag(null).build();
 
         TweetEvent tweetEvent = TweetEvent.builder().id(null).tweet(tweet).build();
 

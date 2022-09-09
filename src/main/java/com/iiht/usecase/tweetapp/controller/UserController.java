@@ -106,6 +106,8 @@ public class UserController {
         log.info(IN_REQUEST_LOG, "putTweetEvent", "Sending tweetEvent to update a tweet");
         tweetEvent.getTweet().setId(tweetId);
         tweetEvent.setTweetEventType(TweetEventType.UPDATE);
+        tweetEvent.getTweet()
+                .setCreated(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()));
         log.debug(IN_REQUEST_LOG, "putTweetEvent", "tweet build completed, now posting, tweet " + tweetEvent);
         kafkaEventProducer.tweetHandler(tweetEvent);
         log.info(SUCCESS);

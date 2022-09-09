@@ -27,7 +27,7 @@ public final class TweetsUtil {
         List<Reply> replies = List.of(reply1, reply2);
 
         return Tweet.builder().id("Tweet-1").username("Test User").content("This is a test tweet")
-                .created("2022/07/28 15:09:48").likes(likeMap).replies(replies).build();
+                .created("2022/07/28 15:09:48").likes(likeMap).replies(replies).tag("tag2").build();
     }
 
     public static Tweet returnTweetTwo() {
@@ -45,6 +45,6 @@ public final class TweetsUtil {
         List<Reply> replies = List.of(reply1, reply2);
 
         return Tweet.builder().id("Tweet-2").username("Test User 2").content("This is another test tweet")
-                .created("2022/07/28 15:09:48").likes(likeMap).replies(replies).build();
+                .created("2022/07/28 15:09:48").likes(likeMap).replies(replies).tag("tag2").build();
     }
 }

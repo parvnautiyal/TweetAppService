@@ -145,6 +145,21 @@ class TweetServiceTest {
     }
 
     @Test
+    void dislikeTweetTest() {
+
+        // given
+        given(tweetRepository.findById("tweet1")).willReturn(Optional.of(tweet1));
+        given(userRepository.findByUserName("user1")).willReturn(Optional.of(user));
+
+        // when
+        String actual = tweetService.dislikeTweet("user1", "tweet1");
+
+        // then
+        assertThat(actual).isEqualTo("Post disliked by user user1");
+        assertThat(tweet1.getLikes()).doesNotContainEntry("user1", "tweet1");
+    }
+
+    @Test
     void likeTweetException() {
 
         // given
@@ -152,6 +167,19 @@ class TweetServiceTest {
 
         // when
         assertThrows(TweetAppException.class, () -> tweetService.likeTweet("Test User", "Tweet-1"));
+
+        // then
+        verify(tweetRepository, times(0)).save(any());
+    }
+
+    @Test
+    void dislikeTweetException() {
+
+        // given
+        given(tweetRepository.findById("Tweet-1")).willReturn(Optional.empty());
+
+        // when
+        assertThrows(TweetAppException.class, () -> tweetService.dislikeTweet("Test User", "Tweet-1"));
 
         // then
         verify(tweetRepository, times(0)).save(any());
