@@ -236,6 +236,30 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    void showUserTest() throws Exception {
+
+        // given
+        user1.setUserName("user1");
+        userRepository.save(user1);
+
+        // when
+        ResultActions response = mockMvc.perform(get(BASE_URI + "/user/user1"));
+
+        // then
+        response.andExpect(status().isOk()).andExpect(jsonPath("$.userName", is(user1.getUserName())));
+    }
+
+    @Test
+    void showUser4xxTest() throws Exception {
+
+        // when
+        ResultActions response = mockMvc.perform(get(BASE_URI + "/user/user1"));
+
+        // then
+        response.andExpect(status().is4xxClientError()).andExpect(content().string("No Users")).andDo(print());
+    }
+
+    @Test
     @Timeout(5)
     void postTweetEventTest() {
 

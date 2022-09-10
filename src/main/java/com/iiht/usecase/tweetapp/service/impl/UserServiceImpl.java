@@ -90,6 +90,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUser(String username) {
+        log.info(IN_REQUEST_LOG, "getUser", "Service method to get user by username");
+        log.info(VALIDATION);
+        Optional<User> user = userRepository.findByUserName(username);
+        if (user.isEmpty())
+            throw new TweetAppException(HttpStatus.NOT_FOUND, "No Users");
+        else {
+            log.debug(EXITING_RESPONSE_LOG, "getUser", user);
+            log.info(SUCCESS);
+            return user.get();
+        }
+    }
+
+    @Override
     public User getUserByEmail(String email) {
         log.info(IN_REQUEST_LOG, "getUserByEmail", "Service method to get a user by email");
         log.info(VALIDATION);

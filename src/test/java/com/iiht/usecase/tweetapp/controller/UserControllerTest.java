@@ -141,6 +141,19 @@ class UserControllerTest {
     }
 
     @Test
+    void showUserTest() throws Exception {
+
+        // given
+        given(userService.getUser("user")).willReturn(user1);
+
+        // when
+        ResultActions response = mockMvc.perform(get(BASE_URI + "/user/user"));
+
+        // then
+        response.andExpect(status().isOk()).andExpect(jsonPath("$.userName", is(user1.getUserName())));
+    }
+
+    @Test
     void postTweetEventTest() throws Exception {
 
         // given

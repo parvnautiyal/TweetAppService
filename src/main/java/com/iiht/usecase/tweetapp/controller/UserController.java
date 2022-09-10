@@ -83,6 +83,15 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{username}")
+    public ResponseEntity<User> showUser(@PathVariable("username") String username) {
+        log.info(IN_REQUEST_LOG, "showUser", "Getting the user with username");
+        User user = userService.getUser(username);
+        log.debug(EXITING_RESPONSE_LOG, "showUser", user);
+        log.info(SUCCESS);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
     @PostMapping("/{username}/add")
     public ResponseEntity<TweetEvent> postTweetEvent(@PathVariable("username") String username,
             @RequestBody @Valid TweetEvent tweetEvent) throws JsonProcessingException {

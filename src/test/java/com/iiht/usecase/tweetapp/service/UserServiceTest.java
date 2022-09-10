@@ -155,6 +155,34 @@ class UserServiceTest {
     }
 
     @Test
+    void getUserTest() {
+
+        // given
+        given(userRepository.findByUserName("Test")).willReturn(Optional.of(user1));
+
+        // then
+        User user = userService.getUser("Test");
+
+        // then
+        assertThat(user).isNotNull();
+        assertThat(user).isEqualTo(user1);
+        verify(userRepository, times(1)).findByUserName(any());
+    }
+
+    @Test
+    void getUserExceptionTest() {
+
+        // given
+        given(userRepository.findByUserName("Test")).willReturn(Optional.empty());
+
+        // then
+        assertThrows(TweetAppException.class, () -> userService.getUser("Test"));
+
+        // then
+        verify(userRepository, times(1)).findByUserName(any());
+    }
+
+    @Test
     void getUserByEmailTest() {
 
         // given
